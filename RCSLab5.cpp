@@ -1,5 +1,5 @@
 // Smyth, Ravela CS546 Section 3122  May 22, 2018
-// Fifth Laboratory Assignment - Option A - Generate USPS bar codes
+// Fifth Laboratory Assignment - Option B - Flatuland
 
 #include <iostream>
 #include <string>
@@ -162,7 +162,7 @@ int Flatulan::col() const
     return m_col;
 }
 
-void Flatulan::move() //hakannnnnnnnnnnnnn
+void Flatulan::move()
 {
     // Attempt to move in a random direction; if we can't move, don't move.
     // If the player is there, don't move.
