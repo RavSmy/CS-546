@@ -1,3 +1,5 @@
+// Smyth, Ravela CS546 Section 3122  May 22, 2018
+// Fifth Laboratory Assignment - Option A - Generate USPS bar codes
 
 #include <iostream>
 #include <string>
