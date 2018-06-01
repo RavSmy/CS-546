@@ -8,13 +8,14 @@
 #include <cstdlib>
 using namespace std;
 
+
 ///////////////////////////////////////////////////////////////////////////
 // Manifest constants
 ///////////////////////////////////////////////////////////////////////////
 
-const int MAXROWS = 20;               // max number of rows in a city
-const int MAXCOLS = 30;               // max number of columns in a city
-const int MAXFLATULANS = 100;         // max number of Flatulans allowed
+const int MAX_ROWS = 20;               // max number of rows in a city
+const int MAX_COLS = 30;               // max number of columns in a city
+const int MAX_FLATULANS = 100;         // max number of Flatulans allowed
 
 const int UP      = 0;
 const int DOWN    = 1;
@@ -101,7 +102,7 @@ private:
     int       m_rows;
     int       m_cols;
     Player  * m_player;
-    Flatulan* m_flatulans[MAXFLATULANS];
+    Flatulan* m_flatulans[MAX_FLATULANS];
     int       m_nFlatulans;
 
     // Helper functions
@@ -167,14 +168,11 @@ void Flatulan::move()
     // Attempt to move in a random direction; if we can't move, don't move.
     // If the player is there, don't move.
     int dir = randInt(0, NUMDIRS-1);  // dir is now UP, DOWN, LEFT, or RIGHT
-    //  Move in the appropriate direction if allowed
-
 
     int row = m_row;
     int col = m_col;
     m_city->determineNewPosition(row, col, dir);
 
-    //check if there is player there...
     if (!(row == m_city->player()->row() && col == m_city->player()->col())){
         m_row = row;
         m_col = col;
@@ -261,7 +259,7 @@ void Player::move(int dir)
     int col = m_col;
     m_city->determineNewPosition(row, col, dir);
 
-    //check if there is flatulan there...
+
     if(m_city->nFlatulansAt(row,col) == 0){
         m_row = row;
         m_col = col;
@@ -271,7 +269,7 @@ void Player::move(int dir)
 
 void Player::getGassed()
 {
-    m_health--;
+    --m_health;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -280,7 +278,7 @@ void Player::getGassed()
 
 City::City(int nRows, int nCols)
 {
-    if (nRows <= 0  ||  nCols <= 0  ||  nRows > MAXROWS  ||  nCols > MAXCOLS)
+    if (nRows <= 0  ||  nCols <= 0  ||  nRows > MAX_ROWS  ||  nCols > MAX_COLS)
     {
         cout << "***** City created with invalid size " << nRows << " by "
              << nCols << "!" << endl;
@@ -295,15 +293,8 @@ City::City(int nRows, int nCols)
 City::~City()
 {
     // Delete the player and all remaining dynamically allocated Flatulans.
-    cerr << "Entering City destructor" << endl;
-
     delete m_player;
-
-    for (int i = 0; i < m_nFlatulans; ++i) {
-        delete m_flatulans[i];
-    }
-    cerr << "Leaving City destructor" << endl;
-
+    for (int i = 0; i < m_nFlatulans; ++i) delete m_flatulans[i];
 }
 
 int City::rows() const
@@ -330,16 +321,13 @@ int City::nFlatulansAt(int r, int c) const //hakan
 {
     // Return the number of Flatulans at row r, column c.
     // Delete the following line and replace it with the correct code.
-//    return 0;  // This implementation compiles, but is incorrect.
 
     int nFlats = 0;
 
-    for (int i = 0; i < m_nFlatulans; ++i) {
-        if(m_flatulans[i]->row() == r && m_flatulans[i]->col() == c){
+    for (int i = 0; i < m_nFlatulans; ++i) 
+        if(m_flatulans[i]->row() == r && m_flatulans[i]->col() == c)
             nFlats++;
-        }
-    }
-
+        
     return nFlats;
 }
 
@@ -394,7 +382,7 @@ void City::display() const
 {
     // Position (row,col) in the city coordinate system is represented in
     // the array element grid[row-1][col-1]
-    char grid[MAXROWS][MAXCOLS];
+    char grid[MAX_ROWS][MAX_COLS];
     int r, c;
 
     // Fill the grid with dots
@@ -410,34 +398,27 @@ void City::display() const
     for (int i = 0; i < m_nFlatulans; ++i) {
         //for each flatulan
 
-        bool oneAlreadyThere;
+        bool flatuFound;
 
-        oneAlreadyThere = (grid[m_flatulans[i]->row()-1][m_flatulans[i]->col()-1] == 'F' ||
+        flatuFound = (grid[m_flatulans[i]->row()-1][m_flatulans[i]->col()-1] == 'F' ||
                            isdigit(grid[m_flatulans[i]->row()-1][m_flatulans[i]->col()-1]));
 
-        if(!oneAlreadyThere){
+        if(!flatuFound)
             grid[m_flatulans[i]->row()-1][m_flatulans[i]->col()-1] = 'F';
-        }
         else{
 
             //if there's 1
-            if( grid[m_flatulans[i]->row()-1][m_flatulans[i]->col()-1] == 'F'){
-                //make it 2
-                grid[m_flatulans[i]->row()-1][m_flatulans[i]->col()-1] = '2';
-            }
+            if( grid[m_flatulans[i]->row()-1][m_flatulans[i]->col()-1] == 'F')
+		   grid[m_flatulans[i]->row()-1][m_flatulans[i]->col()-1] = '2';            
             else{
                 int fCount = grid[m_flatulans[i]->row()-1][m_flatulans[i]->col()-1] - '0';
 
-                //if it's not already 9
                 if(fCount != 9){
-                    //add one to fcount
                     fCount++;
 
                     grid[m_flatulans[i]->row()-1][m_flatulans[i]->col()-1] = static_cast<char>('0' + fCount);
                 }
             }
-
-
         }
 
     }
@@ -488,24 +469,20 @@ bool City::addFlatulan(int r, int c)
     else if (m_player != nullptr  &&  m_player->row() == r  &&  m_player->col() == c)
         return false;
 
-        // If there are MAXFLATULANS unconverted Flatulans, return false.
+        // If there are MAX_FLATULANS unconverted Flatulans, return false.
         // Otherwise, dynamically allocate a new Flatulan at coordinates (r,c).
         // Save the pointer to the newly allocated Flatulan and return true.
 
         // Your function must work as specified in the preceding paragraph even
-        // in this scenario (which won't occur in this game):  MAXFLATULANS
+        // in this scenario (which won't occur in this game):  MAX_FLATULANS
         // are added, then some are converted, then more are added.
 
 
-    else if(m_nFlatulans >= MAXFLATULANS){
+    else if(m_nFlatulans >= MAX_FLATULANS)
         return false;
-    }
 
     else {
         m_flatulans[m_nFlatulans] = new Flatulan(this, r, c);
-
-
-        //don't we also have to increment m_nFlatulans?
         m_nFlatulans++;
 
         return true;
@@ -541,21 +518,17 @@ void City::preachToFlatulansAroundPlayer()
     //  Implement this.
     for (int k = 0; k < m_nFlatulans; k++)
     {
-
-        //ortho diagonal
         if((abs(m_flatulans[k]->col() - m_player->col()) <= 1) && (abs(m_flatulans[k]->row() - m_player->row()) <= 1)){
             if(m_flatulans[k]->possiblyGetConverted()){
 
                 delete m_flatulans[k];
 
-                for (int i = k; i < m_nFlatulans; ++i) {
+                for (int i = k; i < m_nFlatulans; ++i) 
                     if(i != m_nFlatulans - 1)
                         m_flatulans[i] = m_flatulans[i + 1];
-                }
-
-                m_nFlatulans--;
-
-                k--;
+         
+                --m_nFlatulans;
+                --k;
             }
         }
     }
@@ -570,8 +543,7 @@ void City::moveFlatulans()
         //        If that move results in that Flatulan being orthogonally
         //        adjacent to the player, the player suffers a gas blast.
         m_flatulans[k]->move();
-
-        //ortho ughhhhhhhh
+ 
         if((abs(m_flatulans[k]->col() - m_player->col()) == 1) && (abs(m_flatulans[k]->row() - m_player->row()) == 0) ||
            (abs(m_flatulans[k]->row() - m_player->row()) == 1) && (abs(m_flatulans[k]->col() - m_player->col()) == 0)){
             m_player->getGassed();
@@ -595,10 +567,10 @@ Game::Game(int rows, int cols, int nFlatulans)
         cout << "***** Cannot create Game with negative number of Flatulans!" << endl;
         exit(1);
     }
-    if (nFlatulans > MAXFLATULANS)
+    if (nFlatulans > MAX_FLATULANS)
     {
         cout << "***** Trying to create Game with " << nFlatulans
-             << " Flatulans; only " << MAXFLATULANS << " are allowed!" << endl;
+             << " Flatulans; only " << MAX_FLATULANS << " are allowed!" << endl;
         exit(1);
     }
     if (rows == 1  &&  cols == 1  &&  nFlatulans > 0)
